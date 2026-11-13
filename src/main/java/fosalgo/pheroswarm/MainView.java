@@ -853,7 +853,7 @@ public class MainView extends Application {
         engine.start();
 
         primaryStage.setTitle(
-                "Robotics & Mechatronics Laboratory - Mechanical Engineering - Hasanuddin University");
+                "PheroSwarm: A nature-inspired simulator for decentralized drone swarm coverage using frontier-based exploration and digital pheromones");
         primaryStage.setMaximized(true);
         primaryStage.setScene(scene);
         primaryStage.show();
