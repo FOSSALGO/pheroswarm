@@ -4,7 +4,7 @@
 [![JavaFX](https://img.shields.io/badge/JavaFX-21.0.6-blue.svg)](https://openjfx.io/)
 [![Build Tool](https://img.shields.io/badge/Maven-3.8+-green.svg)](https://maven.apache.org/)
 [![API Documentation](https://img.shields.io/badge/Javadoc-Online%20Docs-informational.svg)](https://fossalgo.github.io/pheroswarm/)
-[![License](https://img.shields.io/badge/License-Academic%20%2F%20Open-lightgrey.svg)](#license)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **PheroSwarm** is an interactive, bio-inspired simulation platform designed for multi-agent autonomous exploration and coverage in complex, unknown indoor environments. It integrates **Frontier-Based Exploration (FBE)** with **Repulsive Pheromone Stigmergy (RPS)**, enabling decentralized drone swarms to collaboratively map environments, avoid redundant visitations, and minimize mutual interference without centralized coordination.
 
@@ -173,4 +173,4 @@ If you use **PheroSwarm** or its algorithmic components in your research, disser
 
 ## 📄 License
 
-This software is released for academic, research, and educational purposes. See the repository [LICENSE](LICENSE) file for full licensing conditions.
+This project is licensed under the terms of the [MIT License](LICENSE). See the [LICENSE](LICENSE) file for full details.
