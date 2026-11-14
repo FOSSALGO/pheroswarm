@@ -305,7 +305,7 @@ public class MainView extends Application {
         fileChooser
                 .getExtensionFilters()
                 .addAll(
-                        new FileChooser.ExtensionFilter("Data", "*.sc"),
+                        new FileChooser.ExtensionFilter("Data", "*.scw"),
                         new FileChooser.ExtensionFilter("All Files", "*.*"));
 
         File selectedFile = fileChooser.showOpenDialog(primaryStage);
@@ -341,7 +341,7 @@ public class MainView extends Application {
         fileChooser
                 .getExtensionFilters()
                 .addAll(
-                        new FileChooser.ExtensionFilter("Data", "*.sc"),
+                        new FileChooser.ExtensionFilter("Data", "*.scw"),
                         new FileChooser.ExtensionFilter("All Files", "*.*"));
 
         File selectedFile = fileChooser.showSaveDialog(primaryStage);
