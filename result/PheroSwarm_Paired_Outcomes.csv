@@ -1,0 +1,9 @@
+Map,Start layout,Mode,Observed (%),Visited (%),Revisits (%),Overlap (%),Steps to 90%,Steps to 100%,Termination
+A,Clustered,M0,100.00,33.29,46.88,53.90,552,633,Full coverage
+A,Clustered,M1,100.00,48.51,11.35,10.87,415,552,Full coverage
+A,Dispersed,M0,100.00,42.38,31.98,37.03,524,630,Full coverage
+A,Dispersed,M1,100.00,48.66,14.19,15.11,468,573,Full coverage
+B,Clustered,M0,100.00,26.20,60.62,70.40,533,663,Full coverage
+B,Clustered,M1,100.00,38.85,9.10,9.24,304,426,Full coverage
+B,Dispersed,M0,100.00,38.37,40.34,47.87,521,642,Full coverage
+B,Dispersed,M1,100.00,47.50,10.20,10.72,399,527,Full coverage

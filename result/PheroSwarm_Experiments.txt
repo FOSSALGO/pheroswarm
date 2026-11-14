@@ -1,0 +1,83 @@
+PHEROSWARM | PAIRED EXPLORATION EXPERIMENT
+Sensor radius (cells) = 4
+Maximum steps = 2500
+Stall limit = 30
+Evaporation = 0.05
+Deposit = 1.0
+Recovery = Enabled
+Modes = M0: lambda=0; M1: lambda=1
+Coverage denominator = Reachable free cells, from the engine mask
+Thresholds = NR means not reached before termination
+Map provenance = Map A = S01_G04; Map B = S01_G02
+
+Map A / Clustered / M0 | PheroSwarm_MapA_Clustered.scw
+SHA-256: 5180e91d1ffcd1daed9721356f91908806a3b8a8192d5d9fbe08ef7770620386
+Starts (row,col; zero-based): [Point[row=36, col=43], Point[row=36, col=44], Point[row=37, col=43], Point[row=37, col=44]]
+Reachable: 4040 | Observed at step 0: 2.475248% | Final observed: 100.000000%
+Steps executed: 633 | Step to 90%: 552 | Step to 100%: 633
+Visited: 33.292079% | Revisit: 46.879937% | Overlap: 53.903346%
+Moves: 2528 | Frontier decisions: 2469 | Changed decisions: 0 | Collision rejects: 6 | Alternate moves: 2
+Termination: ALL_REACHABLE_FREE_CELLS_OBSERVED
+
+Map A / Clustered / M1 | PheroSwarm_MapA_Clustered.scw
+SHA-256: 5180e91d1ffcd1daed9721356f91908806a3b8a8192d5d9fbe08ef7770620386
+Starts (row,col; zero-based): [Point[row=36, col=43], Point[row=36, col=44], Point[row=37, col=43], Point[row=37, col=44]]
+Reachable: 4040 | Observed at step 0: 2.475248% | Final observed: 100.000000%
+Steps executed: 552 | Step to 90%: 415 | Step to 100%: 552
+Visited: 48.514851% | Revisit: 11.352329% | Overlap: 10.867347%
+Moves: 2207 | Frontier decisions: 2068 | Changed decisions: 337 | Collision rejects: 1 | Alternate moves: 0
+Termination: ALL_REACHABLE_FREE_CELLS_OBSERVED
+
+Map A / Dispersed / M0 | PheroSwarm_MapA_Dispersed.scw
+SHA-256: 48dd0b9d872a576333638b74840034ca685ec863e9ef02fa6fbdba2ea27d5e76
+Starts (row,col; zero-based): [Point[row=43, col=43], Point[row=11, col=11], Point[row=11, col=43], Point[row=43, col=11]]
+Reachable: 4040 | Observed at step 0: 4.826733% | Final observed: 100.000000%
+Steps executed: 630 | Step to 90%: 524 | Step to 100%: 630
+Visited: 42.376238% | Revisit: 31.982519% | Overlap: 37.032710%
+Moves: 2513 | Frontier decisions: 2490 | Changed decisions: 0 | Collision rejects: 10 | Alternate moves: 3
+Termination: ALL_REACHABLE_FREE_CELLS_OBSERVED
+
+Map A / Dispersed / M1 | PheroSwarm_MapA_Dispersed.scw
+SHA-256: 48dd0b9d872a576333638b74840034ca685ec863e9ef02fa6fbdba2ea27d5e76
+Starts (row,col; zero-based): [Point[row=43, col=43], Point[row=11, col=11], Point[row=11, col=43], Point[row=43, col=11]]
+Reachable: 4040 | Observed at step 0: 4.826733% | Final observed: 100.000000%
+Steps executed: 573 | Step to 90%: 468 | Step to 100%: 573
+Visited: 48.663366% | Revisit: 14.185945% | Overlap: 15.106816%
+Moves: 2287 | Frontier decisions: 2185 | Changed decisions: 461 | Collision rejects: 5 | Alternate moves: 0
+Termination: ALL_REACHABLE_FREE_CELLS_OBSERVED
+
+Map B / Clustered / M0 | PheroSwarm_MapB_Clustered.scw
+SHA-256: a769694fcc38ef5b53afff5d0483bad8ef5a21daa11a3fef4c0a0e6b2d2f5750
+Starts (row,col; zero-based): [Point[row=34, col=44], Point[row=34, col=45], Point[row=35, col=44], Point[row=35, col=45]]
+Reachable: 3985 | Observed at step 0: 2.509410% | Final observed: 100.000000%
+Steps executed: 663 | Step to 90%: 533 | Step to 100%: 663
+Visited: 26.198243% | Revisit: 60.618634% | Overlap: 70.402299%
+Moves: 2647 | Frontier decisions: 2550 | Changed decisions: 0 | Collision rejects: 11 | Alternate moves: 6
+Termination: ALL_REACHABLE_FREE_CELLS_OBSERVED
+
+Map B / Clustered / M1 | PheroSwarm_MapB_Clustered.scw
+SHA-256: a769694fcc38ef5b53afff5d0483bad8ef5a21daa11a3fef4c0a0e6b2d2f5750
+Starts (row,col; zero-based): [Point[row=34, col=44], Point[row=34, col=45], Point[row=35, col=44], Point[row=35, col=45]]
+Reachable: 3985 | Observed at step 0: 2.509410% | Final observed: 100.000000%
+Steps executed: 426 | Step to 90%: 304 | Step to 100%: 426
+Visited: 38.845671% | Revisit: 9.101585% | Overlap: 9.237726%
+Moves: 1699 | Frontier decisions: 1618 | Changed decisions: 422 | Collision rejects: 10 | Alternate moves: 5
+Termination: ALL_REACHABLE_FREE_CELLS_OBSERVED
+
+Map B / Dispersed / M0 | PheroSwarm_MapB_Dispersed.scw
+SHA-256: 66ebc66118b0f5595c897b2885586b17623709e5419cfeebebff27daf8c3aa3e
+Starts (row,col; zero-based): [Point[row=43, col=43], Point[row=11, col=11], Point[row=74, col=74], Point[row=11, col=43]]
+Reachable: 3985 | Observed at step 0: 3.839398% | Final observed: 100.000000%
+Steps executed: 642 | Step to 90%: 521 | Step to 100%: 642
+Visited: 38.368883% | Revisit: 40.343348% | Overlap: 47.874428%
+Moves: 2559 | Frontier decisions: 2502 | Changed decisions: 0 | Collision rejects: 13 | Alternate moves: 4
+Termination: ALL_REACHABLE_FREE_CELLS_OBSERVED
+
+Map B / Dispersed / M1 | PheroSwarm_MapB_Dispersed.scw
+SHA-256: 66ebc66118b0f5595c897b2885586b17623709e5419cfeebebff27daf8c3aa3e
+Starts (row,col; zero-based): [Point[row=43, col=43], Point[row=11, col=11], Point[row=74, col=74], Point[row=11, col=43]]
+Reachable: 3985 | Observed at step 0: 3.839398% | Final observed: 100.000000%
+Steps executed: 527 | Step to 90%: 399 | Step to 100%: 527
+Visited: 47.503137% | Revisit: 10.199241% | Overlap: 10.723719%
+Moves: 2104 | Frontier decisions: 1997 | Changed decisions: 519 | Collision rejects: 4 | Alternate moves: 0
+Termination: ALL_REACHABLE_FREE_CELLS_OBSERVED
