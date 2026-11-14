@@ -1,1 +1,1 @@
-moduleSearchIndex = [];updateSearchResults();
+moduleSearchIndex = [{"l":"fosalgo.pheroswarm"}];updateSearchResults();

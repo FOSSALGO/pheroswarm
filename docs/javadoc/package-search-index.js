@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"drone.pheroswarm"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"fosalgo.pheroswarm","l":"fosalgo.pheroswarm"}];updateSearchResults();
