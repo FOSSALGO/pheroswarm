@@ -35,7 +35,16 @@ public class CanvasView extends Canvas {
      */
     private final String delimiter = ":";
 
-    private final int sensorFoV = 4;
+    /** Original sensing radius, in grid cells. */
+    static final int DEFAULT_SENSOR_RANGE_CELLS = 4;
+
+    /** Upper limit matching the maximum grid width. */
+    static final int MAX_SENSOR_RANGE_CELLS = 400;
+
+    private int sensorFoV = DEFAULT_SENSOR_RANGE_CELLS;
+
+    /** Pending sensing radius shown when playback is idle or paused. */
+    private int previewSensorRangeCells = DEFAULT_SENSOR_RANGE_CELLS;
     private final int MAX_NUM_ROWS = 200;
     private final int MAX_NUM_COLS = 400;
 
@@ -200,12 +209,22 @@ public class CanvasView extends Canvas {
     }
 
     /**
-     * Returns the default sensing radius.
+     * Returns the currently applied sensing radius.
      *
-     * @return default sensor radius in grid cells
+     * @return the applied sensing radius in grid cells
      */
     protected int getSensorRangeCells() {
         return sensorFoV;
+    }
+
+    /**
+     * Updates the idle sensor footprint without modifying the previous simulation.
+     *
+     * @param cells validated sensing radius to preview
+     */
+    void previewSensorRangeCells(int cells) {
+        previewSensorRangeCells = validateSensorRangeCells(cells);
+        if (!playbackPlaying) render();
     }
 
     /**
@@ -1125,7 +1144,13 @@ public class CanvasView extends Canvas {
         }
 
         if (drones != null && !drones.isEmpty())
-            for (int i = 0; i < drones.size(); i++) drones.get(i).draw(gc);
+            for (Drone drone : drones) {
+                if (playbackPlaying || previewSensorRangeCells == drone.sensorFoV) {
+                    drone.draw(gc);
+                } else {
+                    drone.draw(gc, previewSensorRangeCells);
+                }
+            }
 
         if ((state.equals(State.OBSTACLE)
                 || state.equals(State.LINE)
@@ -1155,6 +1180,22 @@ public class CanvasView extends Canvas {
      * @param config validated settings for this run
      */
     protected void run(ExplorationConfig config) {
+        run(config, sensorFoV);
+    }
+
+    /**
+     * Applies one sensor radius to all drones before starting a new simulation.
+     *
+     * @param config validated settings for this run
+     * @param sensorRangeCells sensing radius in grid cells
+     * @throws IllegalArgumentException if the sensing radius is outside the supported range
+     */
+    protected void run(ExplorationConfig config, int sensorRangeCells) {
+        sensorFoV = validateSensorRangeCells(sensorRangeCells);
+        previewSensorRangeCells = sensorFoV;
+        for (Drone drone : drones) {
+            drone.sensorFoV = sensorFoV;
+        }
 
         for (int i = 0; i < drones.size(); i++) drones.get(i).setName("D" + (i + 1));
         clearReplay();
@@ -1165,5 +1206,20 @@ public class CanvasView extends Canvas {
             lastPlaybackTick = System.nanoTime();
         }
         render();
+    }
+
+    /**
+     * Validates the sensing radius shared by all drones in a run.
+     *
+     * @param cells proposed sensing radius in grid cells
+     * @return the validated radius
+     * @throws IllegalArgumentException if the radius is outside the supported range
+     */
+    static int validateSensorRangeCells(int cells) {
+        if (cells < 1 || cells > MAX_SENSOR_RANGE_CELLS) {
+            throw new IllegalArgumentException(
+                    "Sensor range must be between 1 and " + MAX_SENSOR_RANGE_CELLS + " cells.");
+        }
+        return cells;
     }
 }

@@ -372,8 +372,9 @@ public class MainView extends Application {
         clearSimulationLog();
         logArea.appendText("Calculating exploration...\n");
         try {
+            int sensorRangeCells = algorithmPropertiesPane.getSensorRangeCells();
             ExplorationConfig settings = algorithmPropertiesPane.snapshot();
-            canvas.run(settings);
+            canvas.run(settings, sensorRangeCells);
             logArea.setText(buildSimulationReport());
             logArea.positionCaret(0);
             statusLabel.setText("Exploration calculated — replay playing");
@@ -761,6 +762,7 @@ public class MainView extends Application {
         logArea.setMinWidth(300);
 
         algorithmPropertiesPane = new AlgorithmPropertiesPane();
+        algorithmPropertiesPane.onSensorRangeChanged(canvas::previewSensorRangeCells);
         ScrollPane propertiesScroll = new ScrollPane(algorithmPropertiesPane);
         propertiesScroll.setFitToWidth(true);
         propertiesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);

@@ -8,6 +8,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.util.Locale;
+import java.util.function.IntConsumer;
 
 /**
  * JavaFX form for validating baseline and repulsive-pheromone exploration settings.
@@ -23,6 +24,9 @@ public final class AlgorithmPropertiesPane extends VBox {
     private final TextField lambda = field("1.0");
     private final TextField rho = field("0.05");
     private final TextField deposit = field("1.0");
+    private final TextField sensorRange =
+            field(Integer.toString(CanvasView.DEFAULT_SENSOR_RANGE_CELLS));
+    private final Label sensorFeedback = new Label();
     private final CheckBox recovery = new CheckBox("Enable collision/stall recovery");
     private final Label notice = new Label("Changes take effect on the next Run.");
 
@@ -79,6 +83,21 @@ public final class AlgorithmPropertiesPane extends VBox {
                                 "Stall limit",
                                 stallLimit,
                                 "Consecutive timesteps without movement before termination."));
+        sensorRange.setAccessibleText("Sensor range in grid cells");
+        sensorRange.setId("sensor-range-cells");
+        sensorFeedback.getStyleClass().add("properties-help");
+        sensorFeedback.setWrapText(true);
+        VBox sensorSection =
+                section(
+                        "DRONE SENSOR",
+                        "Sets the radius for all drones. The sensing angle remains 360°.",
+                        row(
+                                "Sensor range (cells)",
+                                sensorRange,
+                                "Whole number from 1 to " + CanvasView.MAX_SENSOR_RANGE_CELLS
+                                        + " grid cells. Default: " + CanvasView.DEFAULT_SENSOR_RANGE_CELLS
+                                        + " cells."),
+                        sensorFeedback);
         VBox pheromoneSection =
                 section(
                         "REPULSIVE PHEROMONE",
@@ -101,7 +120,8 @@ public final class AlgorithmPropertiesPane extends VBox {
                         "RECOVERY",
                         "Keep this option unchanged when comparing M0 and M1.",
                         recovery);
-        getChildren().addAll(modelSection, runtimeSection, pheromoneSection, behaviorSection);
+        getChildren()
+                .addAll(modelSection, runtimeSection, sensorSection, pheromoneSection, behaviorSection);
 
         Button reset = new Button("Reset Defaults");
         reset.getStyleClass().add("properties-secondary-btn");
@@ -112,6 +132,36 @@ public final class AlgorithmPropertiesPane extends VBox {
         footer.setAlignment(Pos.CENTER_LEFT);
         getChildren().add(footer);
         updateMethodState();
+        updateSensorPreview(cells -> {});
+    }
+
+    /**
+     * Sends valid sensor radius edits to the preview, including a reset to defaults.
+     *
+     * @param preview handler for a valid radius
+     */
+    void onSensorRangeChanged(IntConsumer preview) {
+        sensorRange.textProperty()
+                .addListener((observable, previous, current) -> updateSensorPreview(preview));
+        updateSensorPreview(preview);
+    }
+
+    /**
+     * Keeps the last valid preview while an incomplete or invalid value is being edited.
+     *
+     * @param preview handler for a valid radius
+     */
+    private void updateSensorPreview(IntConsumer preview) {
+        int cells;
+        try {
+            cells = getSensorRangeCells();
+        } catch (IllegalArgumentException ex) {
+            sensorFeedback.setText("Enter a whole number from 1 to "
+                    + CanvasView.MAX_SENSOR_RANGE_CELLS + " cells.");
+            return;
+        }
+        sensorFeedback.setText("Live preview while idle or paused. Active replay keeps its run settings.");
+        preview.accept(cells);
     }
 
     /**
@@ -193,6 +243,7 @@ public final class AlgorithmPropertiesPane extends VBox {
         lambda.setText("1.0");
         rho.setText("0.05");
         deposit.setText("1.0");
+        sensorRange.setText(Integer.toString(CanvasView.DEFAULT_SENSOR_RANGE_CELLS));
         recovery.setSelected(true);
         updateMethodState();
     }
@@ -227,6 +278,16 @@ public final class AlgorithmPropertiesPane extends VBox {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(label + " must be a number", e);
         }
+    }
+
+    /**
+     * Reads the sensing radius entered for the next run.
+     *
+     * @return the validated sensing radius in grid cells
+     * @throws IllegalArgumentException if the field is not a whole number in the supported range
+     */
+    int getSensorRangeCells() {
+        return CanvasView.validateSensorRangeCells(positiveInteger(sensorRange, "Sensor range"));
     }
 
     /**

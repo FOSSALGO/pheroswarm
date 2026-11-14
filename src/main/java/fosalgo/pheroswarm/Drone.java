@@ -123,6 +123,16 @@ public class Drone {
      * @param gc graphics context in the current world-space transform
      */
     protected void draw(GraphicsContext gc) {
+        draw(gc, sensorFoV);
+    }
+
+    /**
+     * Renders the same sprite with an optional preview radius, without changing simulation state.
+     *
+     * @param gc graphics context in world space
+     * @param sensorRangeCells sensing radius to draw in grid cells
+     */
+    void draw(GraphicsContext gc, int sensorRangeCells) {
         int renderRow = rowPosition, renderCol = colPosition;
         if (frameIndex < 0 || path == null || path.isEmpty() || frameIndex >= path.size()) {
             renderRow = initialRowPosition;
@@ -137,7 +147,11 @@ public class Drone {
         double droneY = (double) renderRow * cellSize + halfCellSize;
         if (droneX >= 0 && droneY >= 0) {
             gc.setFill(Color.valueOf("#FF7D29"));
-            drawSensoreVisibility(gc, droneX, droneY);
+            if (sensorRangeCells == sensorFoV) {
+                drawSensoreVisibility(gc, droneX, droneY);
+            } else {
+                drawSensoreVisibility(gc, droneX, droneY, sensorRangeCells);
+            }
 
             gc.setFill(Color.BLACK);
             gc.fillRect(droneX - 1.5, droneY - 1.5, 3, 3);
@@ -179,6 +193,18 @@ public class Drone {
      * @param sy world-space vertical origin in pixels
      */
     protected void drawSensoreVisibility(GraphicsContext gc, double sx, double sy) {
+        drawSensoreVisibility(gc, sx, sy, sensorFoV);
+    }
+
+    /**
+     * Draws the occluded 360-degree footprint for the given radius.
+     *
+     * @param gc graphics context in world space
+     * @param sx horizontal sensor origin in pixels
+     * @param sy vertical sensor origin in pixels
+     * @param sensorRangeCells sensing radius to draw in grid cells
+     */
+    private void drawSensoreVisibility(GraphicsContext gc, double sx, double sy, int sensorRangeCells) {
         int numRows = environment.length;
         int numCols = environment[0].length;
         int rays = 360;
@@ -196,7 +222,7 @@ public class Drone {
             double y = sy;
             double step = cSize * 0.20;
             double checked = 0;
-            double MAX_RADIUS = (double) sensorFoV * cSize + hcSize;
+            double MAX_RADIUS = (double) sensorRangeCells * cSize + hcSize;
             while (checked < MAX_RADIUS) {
                 x += dx * step;
                 y += dy * step;
