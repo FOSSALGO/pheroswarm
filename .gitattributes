@@ -1,0 +1,8 @@
+# Tell GitHub Linguist that .sc files are simulation environment datasets, not Scala code
+*.sc linguist-documentation
+dataset/** linguist-documentation
+dataset/** linguist-detectable=false
+
+# Exclude generated javadoc html/js from language stats if present in repo
+docs/** linguist-documentation
+docs/** linguist-detectable=false
