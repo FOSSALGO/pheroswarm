@@ -7,7 +7,7 @@ PheroSwarm is a swarm robotics simulation application using bio-inspired pheromo
 ## 📖 API Documentation (Javadoc)
 
 Dokumentasi lengkap kelas, fungsi, dan method (Javadoc) dapat diakses secara langsung:
-- **Online (GitHub Pages)**: `https://<username-github-anda>.github.io/<nama-repo>/` *(atau `https://<username-github-anda>.github.io/<nama-repo>/javadoc/`)*
+- **Online (GitHub Pages)**: `https://fossalgo.github.io/pheroswarm/` *(atau `https://<username-github-anda>.github.io/<nama-repo>/javadoc/`)*
 - **Offline**: Buka file [`docs/index.html`](docs/index.html) atau [`docs/javadoc/index.html`](docs/javadoc/index.html) langsung di browser Anda.
 
 ---
