@@ -135,10 +135,10 @@ target/pheroswarm-1.0.0.jar
 ```
 
 ### 4. Run Executable `.jar`
-- **Double-click** the generated `pheroswarm-1.0-SNAPSHOT.jar` file in Windows File Explorer.
+- **Double-click** the generated `pheroswarm-1.0.0.jar` file in Windows File Explorer.
 - Or launch it via terminal:
   ```bash
-  java -jar target/pheroswarm-1.0-SNAPSHOT.jar
+  java -jar target/pheroswarm-1.0.0.jar
   ```
 
 ---
