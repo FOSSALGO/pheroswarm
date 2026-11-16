@@ -22,6 +22,14 @@ import java.util.ArrayList;
 public class CanvasView extends Canvas {
 
     /**
+     * Original sensing radius, in grid cells.
+     */
+    static final int DEFAULT_SENSOR_RANGE_CELLS = 4;
+    /**
+     * Upper limit matching the maximum grid width.
+     */
+    static final int MAX_SENSOR_RANGE_CELLS = 400;
+    /**
      * Camera zoom limits, zoom increment, and pointer-gesture discrimination settings.
      */
     private static final double MIN_SCALE = 0.1;
@@ -29,40 +37,29 @@ public class CanvasView extends Canvas {
     private static final double ZOOM_FACTOR = 1.05;
     private static final double DRAG_THRESHOLD_PX = 4.0;
     private static final long PLAYBACK_INTERVAL_NS = 95_000_000L;
-
     /**
      * Environment serialization format, sensor radius, and maximum grid dimensions.
      */
     private final String delimiter = ":";
-
-    /** Original sensing radius, in grid cells. */
-    static final int DEFAULT_SENSOR_RANGE_CELLS = 4;
-
-    /** Upper limit matching the maximum grid width. */
-    static final int MAX_SENSOR_RANGE_CELLS = 400;
-
-    private int sensorFoV = DEFAULT_SENSOR_RANGE_CELLS;
-
-    /** Pending sensing radius shown when playback is idle or paused. */
-    private int previewSensorRangeCells = DEFAULT_SENSOR_RANGE_CELLS;
     private final int MAX_NUM_ROWS = 200;
     private final int MAX_NUM_COLS = 400;
-
     /**
      * Camera transform and mouse-interaction state.
      */
     protected double translateX = 0.0;
-
     /**
      * Vertical camera offset in pixels.
      */
     protected double translateY = 0.0;
-
     /**
      * Current world-to-canvas scale.
      */
     protected double scale = 1.0;
-
+    private int sensorFoV = DEFAULT_SENSOR_RANGE_CELLS;
+    /**
+     * Pending sensing radius shown when playback is idle or paused.
+     */
+    private int previewSensorRangeCells = DEFAULT_SENSOR_RANGE_CELLS;
     private double mouseAnchorX = 0.0;
     private double mouseAnchorY = 0.0;
 
@@ -154,6 +151,21 @@ public class CanvasView extends Canvas {
         } catch (NumberFormatException e) {
             throw new IOException("Invalid " + key, e);
         }
+    }
+
+    /**
+     * Validates the sensing radius shared by all drones in a run.
+     *
+     * @param cells proposed sensing radius in grid cells
+     * @return the validated radius
+     * @throws IllegalArgumentException if the radius is outside the supported range
+     */
+    static int validateSensorRangeCells(int cells) {
+        if (cells < 1 || cells > MAX_SENSOR_RANGE_CELLS) {
+            throw new IllegalArgumentException(
+                    "Sensor range must be between 1 and " + MAX_SENSOR_RANGE_CELLS + " cells.");
+        }
+        return cells;
     }
 
     /**
@@ -1186,7 +1198,7 @@ public class CanvasView extends Canvas {
     /**
      * Applies one sensor radius to all drones before starting a new simulation.
      *
-     * @param config validated settings for this run
+     * @param config           validated settings for this run
      * @param sensorRangeCells sensing radius in grid cells
      * @throws IllegalArgumentException if the sensing radius is outside the supported range
      */
@@ -1206,20 +1218,5 @@ public class CanvasView extends Canvas {
             lastPlaybackTick = System.nanoTime();
         }
         render();
-    }
-
-    /**
-     * Validates the sensing radius shared by all drones in a run.
-     *
-     * @param cells proposed sensing radius in grid cells
-     * @return the validated radius
-     * @throws IllegalArgumentException if the radius is outside the supported range
-     */
-    static int validateSensorRangeCells(int cells) {
-        if (cells < 1 || cells > MAX_SENSOR_RANGE_CELLS) {
-            throw new IllegalArgumentException(
-                    "Sensor range must be between 1 and " + MAX_SENSOR_RANGE_CELLS + " cells.");
-        }
-        return cells;
     }
 }

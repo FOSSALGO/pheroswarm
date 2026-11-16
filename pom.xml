@@ -6,11 +6,14 @@
 
     <groupId>fosalgo</groupId>
     <artifactId>pheroswarm</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <name>pheroswarm</name>
+    <version>1.0.0</version>
+    <name>PheroSwarm</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>24</maven.compiler.release>
+        <javafx.version>21.0.6</javafx.version>
+        <pheroswarm.mainClass>fosalgo.pheroswarm.Launcher</pheroswarm.mainClass>
         <junit.version>5.12.1</junit.version>
     </properties>
 
@@ -18,12 +21,12 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>21.0.6</version>
+            <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>21.0.6</version>
+            <version>${javafx.version}</version>
         </dependency>
 
         <dependency>
@@ -46,30 +49,25 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
-                <configuration>
-                    <source>24</source>
-                    <target>24</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
-                <executions>
-                    <execution>
-                        <!-- Default configuration for running with: mvn clean javafx:run -->
-                        <id>default-cli</id>
-                        <configuration>
-                            <mainClass>fosalgo.pheroswarm/fosalgo.pheroswarm.HelloApplication</mainClass>
-                            <launcher>app</launcher>
-                            <jlinkZipName>app</jlinkZipName>
-                            <jlinkImageName>app</jlinkImageName>
-                            <noManPages>true</noManPages>
-                            <stripDebug>true</stripDebug>
-                            <noHeaderFiles>true</noHeaderFiles>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <mainClass>fosalgo.pheroswarm/${pheroswarm.mainClass}</mainClass>
+                    <launcher>app</launcher>
+                    <jlinkZipName>app</jlinkZipName>
+                    <jlinkImageName>app</jlinkImageName>
+                    <noManPages>true</noManPages>
+                    <stripDebug>true</stripDebug>
+                    <noHeaderFiles>true</noHeaderFiles>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -82,9 +80,10 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>fosalgo.pheroswarm.Launcher</mainClass>
+                                    <mainClass>${pheroswarm.mainClass}</mainClass>
                                 </transformer>
                             </transformers>
                             <filters>
@@ -107,8 +106,8 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.11.2</version>
                 <configuration>
-                    <reportOutputDirectory>${project.basedir}/docs</reportOutputDirectory>
-                    <destDir>javadoc</destDir>
+                    <outputDirectory>${project.build.directory}/javadoc</outputDirectory>
+                    <sourcepath>${project.build.sourceDirectory}</sourcepath>
                     <doclint>none</doclint>
                     <show>protected</show>
                     <nohelp>true</nohelp>

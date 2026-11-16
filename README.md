@@ -105,7 +105,7 @@ The simulation behavior can be tuned through `ExplorationConfig` directly from t
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Java Development Kit (JDK):** Version 21 or later (compatible with JDK 24).
+- **Java Development Kit (JDK):** Version 24 or later (compatible with JDK 24).
 - **Apache Maven:** Version 3.8+ (or use the bundled `mvnw` wrapper).
 
 ### 1. Clone the Repository

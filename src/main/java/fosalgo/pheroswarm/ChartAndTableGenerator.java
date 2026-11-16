@@ -1,241 +1,278 @@
 package fosalgo.pheroswarm;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.ZipFile;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.*;
 
-/** Builds compact, publication-oriented vector charts and editable tables from Tester output. */
+/**
+ * Builds compact, publication-oriented vector charts and editable tables from Tester output.
+ */
 public final class ChartAndTableGenerator {
-    private static final String INK="#253746", BASE="#4d6075", M1="#087a72", GRID="#dce5e8", SOFT="#f2f7f7";
-    // Fig. 3 palette. The companion redundancy chart keeps its original styling.
-    private static final String COVERAGE_M0="#CB0404", COVERAGE_M1="#309898";
-    private static final String COVERAGE_DASH="5 3";
-    private static final List<String> MAPS=List.of("A","B"), LAYOUTS=List.of("Clustered","Dispersed");
-    private record Obs(int step,double pct) {}
-    private ChartAndTableGenerator() {}
+    private static final String INK = "#253746", BASE = "#4d6075", M1 = "#087a72", GRID = "#dce5e8", SOFT = "#f2f7f7";
+    // Shared mode colours for coverage and redundancy figures.
+    private static final String COVERAGE_M0 = "#CB0404", COVERAGE_M1 = "#309898";
+    private static final String COVERAGE_DASH = "5 3";
+    private static final List<String> MAPS = List.of("A", "B"), LAYOUTS = List.of("Clustered", "Dispersed");
 
-    public static void main(String[] args) throws Exception {
-        Path root=args.length==0?Path.of(""):Path.of(args[0]);
-        Path out=root.resolve("result");
-        List<List<String>> runs, curves;
-        try (var workbook=new ZipFile(out.resolve("PheroSwarm_Experiments.xlsx").toFile())) {
-            runs=readSheet(workbook,1);
-            curves=readSheet(workbook,2);
-        }
-        var byRun=new LinkedHashMap<String,List<String>>();
-        var series=new LinkedHashMap<String,List<Obs>>();
-        for(var r:runs) {
-            if(byRun.put(key(r),r)!=null) throw new IOException("Duplicate run: "+key(r));
-        }
-        for(var r:curves) series.computeIfAbsent(key(r),k->new ArrayList<>())
-                .add(new Obs(Integer.parseInt(r.get(3)),Double.parseDouble(r.get(5))));
-        if(byRun.size()!=8 || !byRun.keySet().equals(series.keySet()))
-            throw new IOException("Workbook does not contain eight matching runs and curves");
-        for(String k:byRun.keySet()) {
-            var values=series.get(k);
-            values.sort(Comparator.comparingInt(Obs::step));
-            var last=values.get(values.size()-1);
-            for(int i=0;i<values.size();i++)
-                if(values.get(i).step()!=i || (i>0 && values.get(i).pct()<values.get(i-1).pct()))
-                    throw new IOException("Incomplete or nonmonotonic series: "+k);
-            if(last.step()!=Integer.parseInt(byRun.get(k).get(7))
-                    || Math.abs(last.pct()-Double.parseDouble(byRun.get(k).get(6)))>1e-8)
-                throw new IOException("Final curve point does not match Runs: "+k);
-        }
-        writeCoverage(out,series);
-        writeRedundancy(out,byRun);
-        writeTables(out,byRun);
-        System.out.println("Generated two vector charts and editable results tables in "+out.toAbsolutePath());
+    private ChartAndTableGenerator() {
     }
 
-    private static String key(List<String> r) {return String.join("/",r.subList(0,3));}
+    public static void main(String[] args) throws Exception {
+        Path root = args.length == 0 ? Path.of("") : Path.of(args[0]);
+        Path out = root.resolve("result");
+        List<List<String>> runs, curves;
+        try (var workbook = new ZipFile(out.resolve("PheroSwarm_Experiments.xlsx").toFile())) {
+            runs = readSheet(workbook, 1);
+            curves = readSheet(workbook, 2);
+        }
+        var byRun = new LinkedHashMap<String, List<String>>();
+        var series = new LinkedHashMap<String, List<Obs>>();
+        for (var r : runs) {
+            if (byRun.put(key(r), r) != null) throw new IOException("Duplicate run: " + key(r));
+        }
+        for (var r : curves)
+            series.computeIfAbsent(key(r), k -> new ArrayList<>())
+                    .add(new Obs(Integer.parseInt(r.get(3)), Double.parseDouble(r.get(5))));
+        if (byRun.size() != 8 || !byRun.keySet().equals(series.keySet()))
+            throw new IOException("Workbook does not contain eight matching runs and curves");
+        for (String k : byRun.keySet()) {
+            var values = series.get(k);
+            values.sort(Comparator.comparingInt(Obs::step));
+            var last = values.get(values.size() - 1);
+            for (int i = 0; i < values.size(); i++)
+                if (values.get(i).step() != i || (i > 0 && values.get(i).pct() < values.get(i - 1).pct()))
+                    throw new IOException("Incomplete or nonmonotonic series: " + k);
+            if (last.step() != Integer.parseInt(byRun.get(k).get(7))
+                    || Math.abs(last.pct() - Double.parseDouble(byRun.get(k).get(6))) > 1e-8)
+                throw new IOException("Final curve point does not match Runs: " + k);
+        }
+        writeCoverage(out, series);
+        writeRedundancy(out, byRun);
+        writeTables(out, byRun);
+        System.out.println("Generated two vector charts and editable results tables in " + out.toAbsolutePath());
+    }
+
+    private static String key(List<String> r) {
+        return String.join("/", r.subList(0, 3));
+    }
 
     // The workbook uses inline strings and numeric cells, as written by Tester.
-    private static List<List<String>> readSheet(ZipFile z,int index) throws Exception {
-        var factory=DocumentBuilderFactory.newInstance();
-        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
+    private static List<List<String>> readSheet(ZipFile z, int index) throws Exception {
+        var factory = DocumentBuilderFactory.newInstance();
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         factory.setExpandEntityReferences(false);
-        var entry=z.getEntry("xl/worksheets/sheet"+index+".xml");
-        if(entry==null) throw new IOException("Missing worksheet "+index);
-        try(var input=z.getInputStream(entry)) {
-            NodeList rows=factory.newDocumentBuilder().parse(input).getElementsByTagName("row");
-            List<List<String>> result=new ArrayList<>();
-            for(int i=1;i<rows.getLength();i++) {
-                List<String> values=new ArrayList<>();
-                NodeList cells=((Element)rows.item(i)).getElementsByTagName("c");
-                for(int j=0;j<cells.getLength();j++) values.add(cells.item(j).getTextContent().trim());
+        var entry = z.getEntry("xl/worksheets/sheet" + index + ".xml");
+        if (entry == null) throw new IOException("Missing worksheet " + index);
+        try (var input = z.getInputStream(entry)) {
+            NodeList rows = factory.newDocumentBuilder().parse(input).getElementsByTagName("row");
+            List<List<String>> result = new ArrayList<>();
+            for (int i = 1; i < rows.getLength(); i++) {
+                List<String> values = new ArrayList<>();
+                NodeList cells = ((Element) rows.item(i)).getElementsByTagName("c");
+                for (int j = 0; j < cells.getLength(); j++) values.add(cells.item(j).getTextContent().trim());
                 result.add(values);
             }
             return result;
         }
     }
 
-    private static void writeCoverage(Path out,Map<String,List<Obs>> all) throws IOException {
-        StringBuilder b=svg(720,506,"Cumulative observed coverage by map and starting layout");
-        int max=all.values().stream().mapToInt(v->v.get(v.size()-1).step()).max().orElseThrow();
-        int interval=Math.max(1,(int)(Math.ceil(max/400.0)*100));
-        int xMax=(int)Math.ceil(max/(double)interval)*interval;
-        for(int i=0;i<4;i++) {
-            String map=MAPS.get(i/2), layout=LAYOUTS.get(i%2);
-            int x=74+338*(i%2), y=62+220*(i/2), w=283,h=142;
-            label(b,x,y-37,"("+(char)('a'+i)+")  Map "+map+" · "+layout,15,"start",true);
-            rect(b,x,y,w,h,"#FAFCFC");
-            for(int pct=0;pct<=100;pct+=25) {
-                double yy=y+h-h*pct/100.0;
-                line(b,x,yy,x+w,yy,GRID,pct==100?1.0:0.7,"");
-                label(b,x-9,yy+4,Integer.toString(pct),12,"end",false);
+    private static void writeCoverage(Path out, Map<String, List<Obs>> all) throws IOException {
+        StringBuilder b = svg(720, 506, "Cumulative observed coverage by map and starting layout");
+        int max = all.values().stream().mapToInt(v -> v.get(v.size() - 1).step()).max().orElseThrow();
+        int interval = Math.max(1, (int) (Math.ceil(max / 400.0) * 100));
+        int xMax = (int) Math.ceil(max / (double) interval) * interval;
+        for (int i = 0; i < 4; i++) {
+            String map = MAPS.get(i / 2), layout = LAYOUTS.get(i % 2);
+            int x = 74 + 338 * (i % 2), y = 62 + 220 * (i / 2), w = 283, h = 142;
+            label(b, x, y - 37, "(" + (char) ('a' + i) + ")  Map " + map + " · " + layout, 15, "start", true);
+            rect(b, x, y, w, h, "#FAFCFC");
+            for (int pct = 0; pct <= 100; pct += 25) {
+                double yy = y + h - h * pct / 100.0;
+                line(b, x, yy, x + w, yy, GRID, pct == 100 ? 1.0 : 0.7, "");
+                label(b, x - 9, yy + 4, Integer.toString(pct), 12, "end", false);
             }
-            for(int t=0;t<=xMax;t+=interval) {
-                double xx=x+w*t/(double)xMax;
-                line(b,xx,y+h,xx,y+h+4,INK,0.9,"");
-                label(b,xx,y+h+17,Integer.toString(t),12,"middle",false);
+            for (int t = 0; t <= xMax; t += interval) {
+                double xx = x + w * t / (double) xMax;
+                line(b, xx, y + h, xx, y + h + 4, INK, 0.9, "");
+                label(b, xx, y + h + 17, Integer.toString(t), 12, "middle", false);
             }
-            line(b,x,y+h,x+w,y+h,INK,0.9,"");
-            line(b,x,y,x,y+h,INK,0.9,"");
-            Obs[] endpoints=new Obs[2];
-            for(int variant=0;variant<2;variant++) {
-                boolean baseline=variant==0;
-                String mode=baseline?"M0":"M1";
-                var v=all.get(map+"/"+layout+"/"+mode);
-                if(v==null) throw new IOException("Missing curve: "+map+"/"+layout+"/"+mode);
-                String color=baseline?COVERAGE_M0:COVERAGE_M1;
-                StringBuilder d=new StringBuilder();
-                for(Obs o:v) {
-                    double xx=x+w*o.step()/(double)xMax, yy=y+h-h*o.pct()/100;
-                    if(d.isEmpty()) d.append('M').append(n(xx)).append(' ').append(n(yy));
+            line(b, x, y + h, x + w, y + h, INK, 0.9, "");
+            line(b, x, y, x, y + h, INK, 0.9, "");
+            Obs[] endpoints = new Obs[2];
+            for (int variant = 0; variant < 2; variant++) {
+                boolean baseline = variant == 0;
+                String mode = baseline ? "M0" : "M1";
+                var v = all.get(map + "/" + layout + "/" + mode);
+                if (v == null) throw new IOException("Missing curve: " + map + "/" + layout + "/" + mode);
+                String color = baseline ? COVERAGE_M0 : COVERAGE_M1;
+                StringBuilder d = new StringBuilder();
+                for (Obs o : v) {
+                    double xx = x + w * o.step() / (double) xMax, yy = y + h - h * o.pct() / 100;
+                    if (d.isEmpty()) d.append('M').append(n(xx)).append(' ').append(n(yy));
                     else d.append('H').append(n(xx)).append('V').append(n(yy));
                 }
                 b.append("<path d=\"").append(d).append("\" fill=\"none\" stroke=\"").append(color)
-                    .append("\" stroke-width=\"2.15\" stroke-linejoin=\"round\"")
-                    .append(baseline?" stroke-dasharray=\""+COVERAGE_DASH+"\"":"").append("/>");
-                endpoints[variant]=v.get(v.size()-1);
+                        .append("\" stroke-width=\"2.15\" stroke-linejoin=\"round\"")
+                        .append(baseline ? " stroke-dasharray=\"" + COVERAGE_DASH + "\"" : "").append("/>");
+                endpoints[variant] = v.get(v.size() - 1);
             }
             // Mark actual run endpoints and label the completion step when coverage is full.
-            for(int variant=0;variant<2;variant++) {
-                Obs end=endpoints[variant];
-                String color=variant==0?COVERAGE_M0:COVERAGE_M1;
-                double xx=x+w*end.step()/(double)xMax, yy=y+h-h*end.pct()/100;
-                if(variant==0) rect(b,xx-2.8,yy-2.8,5.6,5.6,color);
-                else circle(b,xx,yy,3.1,color);
-                if(end.pct()==100.0) {
-                    double gap=w*Math.abs(end.step()-endpoints[1-variant].step())/(double)xMax;
-                    double labelX=Math.max(x+13,Math.min(x+w-13,xx));
-                    double labelY=y-10-(gap<28 && variant==0 && endpoints[1].pct()==100.0?13:0);
-                    label(b,labelX,labelY,Integer.toString(end.step()),11,"middle",true);
+            for (int variant = 0; variant < 2; variant++) {
+                Obs end = endpoints[variant];
+                String color = variant == 0 ? COVERAGE_M0 : COVERAGE_M1;
+                double xx = x + w * end.step() / (double) xMax, yy = y + h - h * end.pct() / 100;
+                if (variant == 0) rect(b, xx - 2.8, yy - 2.8, 5.6, 5.6, color);
+                else circle(b, xx, yy, 3.1, color);
+                if (end.pct() == 100.0) {
+                    double gap = w * Math.abs(end.step() - endpoints[1 - variant].step()) / (double) xMax;
+                    double labelX = Math.max(x + 13, Math.min(x + w - 13, xx));
+                    double labelY = y - 10 - (gap < 28 && variant == 0 && endpoints[1].pct() == 100.0 ? 13 : 0);
+                    label(b, labelX, labelY, Integer.toString(end.step()), 11, "middle", true);
                 }
             }
         }
         b.append("<g transform=\"translate(20 243) rotate(-90)\">");
-        label(b,0,0,"Observed coverage (%)",14,"middle",true);
+        label(b, 0, 0, "Observed coverage (%)", 14, "middle", true);
         b.append("</g>");
-        label(b,384,471,"Simulation step",14,"middle",true);
-        coverageLegend(b,251,491);
-        write(out,"PheroSwarm_Observed_Coverage.svg",b);
+        label(b, 384, 471, "Simulation step", 14, "middle", true);
+        coverageLegend(b, 251, 491);
+        write(out, "PheroSwarm_Observed_Coverage.svg", b);
     }
 
-    private static void writeRedundancy(Path out,Map<String,List<String>> runs) throws IOException {
-        StringBuilder b=svg(720,274,"Repeat visits and inter-drone overlap");
-        for(int k=0;k<2;k++) {
-            int x=105+k*346,y=48,w=239,h=159;
-            label(b,x,y-18,k==0?"(a) Revisit ratio":"(b) Inter-drone overlap",15,"start",true);
-            rect(b,x,y,w,h,SOFT);
-            for(int p=0;p<=100;p+=25) {
-                double xx=x+w*p/100.0;
-                line(b,xx,y,xx,y+h,GRID,0.8,"");
-                label(b,xx,y+h+16,Integer.toString(p),12,"middle",false);
+    private static void writeRedundancy(Path out, Map<String, List<String>> runs) throws IOException {
+        StringBuilder b = svg(720, 292, "Paired revisit ratio and inter-drone overlap");
+        for (int k = 0; k < 2; k++) {
+            int x = 119 + k * 298, y = 48, w = 271, h = 167;
+            label(b, x, 26, k == 0 ? "(a) Revisit ratio" : "(b) Inter-drone overlap", 16, "start", true);
+            for (int i = 0; i < 4; i++) {
+                if (i % 2 == 0) rect(b, x, y + i * 41, w, 41, "#F5F8F9");
             }
-            for(int i=0;i<4;i++) {
-                String map=MAPS.get(i/2), layout=LAYOUTS.get(i%2);
-                double yy=y+22+i*38;
-                if(k==0) label(b,x-10,yy+4,map+" "+layout,12,"end",false);
-                String key=map+"/"+layout+"/";
-                double a=Double.parseDouble(runs.get(key+"M0").get(11+k));
-                double c=Double.parseDouble(runs.get(key+"M1").get(11+k));
-                double xa=x+w*a/100,xc=x+w*c/100;
-                line(b,xa,yy,xc,yy,"#9daeb4",1.4,"");
-                circle(b,xa,yy,4,BASE);
-                rect(b,xc-4,yy-4,8,8,M1);
+            for (int pct = 0; pct <= 100; pct += 25) {
+                double xx = x + w * pct / 100.0;
+                line(b, xx, y, xx, y + h, GRID, 0.8, "");
+                line(b, xx, y + h, xx, y + h + 4, INK, 1.0, "");
+                label(b, xx, y + h + 18, Integer.toString(pct), 12, "middle", false);
             }
-            label(b,x+w/2,y+h+37,"Percent",13,"middle",true);
+            line(b, x, y + h, x + w, y + h, INK, 1.1, "");
+            for (int i = 0; i < 4; i++) {
+                String map = MAPS.get(i / 2), layout = LAYOUTS.get(i % 2);
+                double yy = y + 24 + i * 41;
+                if (k == 0) label(b, x - 10, yy + 4, map + " · " + layout, 12, "end", false);
+                String key = map + "/" + layout + "/";
+                double m0 = Double.parseDouble(runs.get(key + "M0").get(11 + k));
+                double m1 = Double.parseDouble(runs.get(key + "M1").get(11 + k));
+                double x0 = x + w * m0 / 100, x1 = x + w * m1 / 100;
+                line(b, x0, yy, x1, yy, "#536575", 1.9, "");
+                circle(b, x0, yy, 4.7, COVERAGE_M0);
+                rect(b, x1 - 4.4, yy - 4.4, 8.8, 8.8, COVERAGE_M1);
+                boolean close = Math.abs(x0 - x1) < 35;
+                label(b, x0, yy - 9, oneDecimal(m0), 11, "middle", true);
+                label(b, x1, yy + (close ? 15 : -9), oneDecimal(m1), 11, "middle", true);
+            }
         }
-        circle(b,293,260,4,BASE); label(b,303,264,"M0",12,"start",false);
-        rect(b,362,256,8,8,M1); label(b,377,264,"M1",12,"start",false);
-        write(out,"PheroSwarm_Redundancy.svg",b);
+        label(b, 403.5, 251, "Percentage (%)", 13, "middle", true);
+        circle(b, 315, 275, 4.7, COVERAGE_M0);
+        label(b, 326, 279, "M0 (λ=0)", 12, "start", false);
+        rect(b, 412.6, 270.6, 8.8, 8.8, COVERAGE_M1);
+        label(b, 428, 279, "M1 (λ=1)", 12, "start", false);
+        write(out, "PheroSwarm_Redundancy.svg", b);
     }
 
-    private static void writeTables(Path out,Map<String,List<String>> runs) throws IOException {
-        String[] head={"Map","Start layout","Mode","Observed (%)","Visited (%)","Revisits (%)","Overlap (%)",
-                "Steps to 90%","Steps to 100%","Termination"};
-        int[] columns={0,1,2,6,10,11,12,8,9,14};
-        StringBuilder csv=new StringBuilder(String.join(",",head)).append('\n');
-        StringBuilder html=new StringBuilder("""
-            <!doctype html><html lang="en"><meta charset="utf-8"><title>PheroSwarm paired runs</title>
-            <style>body{font:14px Arial,sans-serif;color:#253746;margin:28px auto;max-width:970px}
-            table{border-collapse:collapse;width:100%}caption{text-align:left;font-weight:bold;margin-bottom:10px}
-            th,td{padding:7px 9px;text-align:right;border-bottom:1px solid #dce5e8;white-space:nowrap}
-            th{background:#183d4b;color:white}th:nth-child(-n+3),td:nth-child(-n+3),th:last-child,td:last-child{text-align:left}
-            tbody tr:nth-child(4n+3),tbody tr:nth-child(4n+4){background:#f2f7f7}
-            p{font-size:12px;color:#445563}
-            @media print{body{margin:0}th{color:#253746;background:white;border-top:2px solid #253746}}
-            </style><table><caption>Paired exploration outcomes</caption><thead><tr>
-            """);
-        for(String h:head) html.append("<th>").append(h).append("</th>");
+    private static String oneDecimal(double value) {
+        return String.format(Locale.ROOT, "%.1f", value);
+    }
+
+    private static void writeTables(Path out, Map<String, List<String>> runs) throws IOException {
+        String[] head = {"Map", "Start layout", "Mode", "Observed (%)", "Visited (%)", "Revisits (%)", "Overlap (%)",
+                "Steps to 90%", "Steps to 100%", "Termination"};
+        int[] columns = {0, 1, 2, 6, 10, 11, 12, 8, 9, 14};
+        StringBuilder csv = new StringBuilder(String.join(",", head)).append('\n');
+        StringBuilder html = new StringBuilder("""
+                <!doctype html><html lang="en"><meta charset="utf-8"><title>PheroSwarm paired runs</title>
+                <style>body{font:14px Arial,sans-serif;color:#253746;margin:28px auto;max-width:970px}
+                table{border-collapse:collapse;width:100%}caption{text-align:left;font-weight:bold;margin-bottom:10px}
+                th,td{padding:7px 9px;text-align:right;border-bottom:1px solid #dce5e8;white-space:nowrap}
+                th{background:#183d4b;color:white}th:nth-child(-n+3),td:nth-child(-n+3),th:last-child,td:last-child{text-align:left}
+                tbody tr:nth-child(4n+3),tbody tr:nth-child(4n+4){background:#f2f7f7}
+                p{font-size:12px;color:#445563}
+                @media print{body{margin:0}th{color:#253746;background:white;border-top:2px solid #253746}}
+                </style><table><caption>Paired exploration outcomes</caption><thead><tr>
+                """);
+        for (String h : head) html.append("<th>").append(h).append("</th>");
         html.append("</tr></thead><tbody>");
-        for(var row:runs.values()) {
+        for (var row : runs.values()) {
             html.append("<tr>");
-            List<String> items=new ArrayList<>();
-            for(int i:columns) {
-                String v=row.get(i);
-                if(i==6 || (i>=10 && i<=12)) v=n(Double.parseDouble(v));
-                if(i==14 && v.equals("ALL_REACHABLE_FREE_CELLS_OBSERVED")) v="Full coverage";
+            List<String> items = new ArrayList<>();
+            for (int i : columns) {
+                String v = row.get(i);
+                if (i == 6 || (i >= 10 && i <= 12)) v = n(Double.parseDouble(v));
+                if (i == 14 && v.equals("ALL_REACHABLE_FREE_CELLS_OBSERVED")) v = "Full coverage";
                 html.append("<td>").append(esc(v)).append("</td>");
                 items.add(v);
             }
-            csv.append(String.join(",",items)).append('\n');
+            csv.append(String.join(",", items)).append('\n');
             html.append("</tr>");
         }
         html.append("</tbody></table><p>NR = threshold not reached. Observed and visited coverage use reachable free cells as the denominator.</p></html>");
-        Files.writeString(out.resolve("PheroSwarm_Paired_Outcomes.csv"),csv);
-        Files.writeString(out.resolve("PheroSwarm_Paired_Outcomes.html"),html);
+        Files.writeString(out.resolve("PheroSwarm_Paired_Outcomes.csv"), csv);
+        Files.writeString(out.resolve("PheroSwarm_Paired_Outcomes.html"), html);
     }
 
-    private static StringBuilder svg(int w,int h,String title) {
+    private static StringBuilder svg(int w, int h, String title) {
         return new StringBuilder("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"180mm\" height=\"")
-                .append(n(180.0*h/w)).append("mm\" viewBox=\"0 0 ").append(w).append(' ').append(h)
+                .append(n(180.0 * h / w)).append("mm\" viewBox=\"0 0 ").append(w).append(' ').append(h)
                 .append("\" role=\"img\"><title>").append(esc(title)).append("</title><rect width=\"100%\" height=\"100%\" fill=\"white\"/>");
     }
-    private static void write(Path out,String name,StringBuilder b)throws IOException {
-        Files.writeString(out.resolve(name),b.append("</svg>").toString());
+
+    private static void write(Path out, String name, StringBuilder b) throws IOException {
+        Files.writeString(out.resolve(name), b.append("</svg>").toString());
     }
-    private static void coverageLegend(StringBuilder b,int x,int y) {
-        line(b,x,y,x+31,y,COVERAGE_M0,2.15,COVERAGE_DASH);
-        rect(b,x+12.7,y-2.8,5.6,5.6,COVERAGE_M0);
-        label(b,x+40,y+4,"M0 (λ=0)",12,"start",false);
-        line(b,x+151,y,x+182,y,COVERAGE_M1,2.15,"");
-        circle(b,x+166.5,y,3.1,COVERAGE_M1);
-        label(b,x+191,y+4,"M1 (λ=1)",12,"start",false);
+
+    private static void coverageLegend(StringBuilder b, int x, int y) {
+        line(b, x, y, x + 31, y, COVERAGE_M0, 2.15, COVERAGE_DASH);
+        rect(b, x + 12.7, y - 2.8, 5.6, 5.6, COVERAGE_M0);
+        label(b, x + 40, y + 4, "M0 (λ=0)", 12, "start", false);
+        line(b, x + 151, y, x + 182, y, COVERAGE_M1, 2.15, "");
+        circle(b, x + 166.5, y, 3.1, COVERAGE_M1);
+        label(b, x + 191, y + 4, "M1 (λ=1)", 12, "start", false);
     }
-    private static void rect(StringBuilder b,double x,double y,double w,double h,String fill) {
+
+    private static void rect(StringBuilder b, double x, double y, double w, double h, String fill) {
         b.append("<rect x=\"").append(n(x)).append("\" y=\"").append(n(y)).append("\" width=\"").append(n(w))
                 .append("\" height=\"").append(n(h)).append("\" fill=\"").append(fill).append("\"/>");
     }
-    private static void circle(StringBuilder b,double x,double y,double r,String fill) {
+
+    private static void circle(StringBuilder b, double x, double y, double r, String fill) {
         b.append("<circle cx=\"").append(n(x)).append("\" cy=\"").append(n(y)).append("\" r=\"").append(n(r))
                 .append("\" fill=\"").append(fill).append("\"/>");
     }
-    private static void line(StringBuilder b,double x,double y,double x2,double y2,String color,double width,String dash) {
+
+    private static void line(StringBuilder b, double x, double y, double x2, double y2, String color, double width, String dash) {
         b.append("<line x1=\"").append(n(x)).append("\" y1=\"").append(n(y)).append("\" x2=\"").append(n(x2))
                 .append("\" y2=\"").append(n(y2)).append("\" stroke=\"").append(color).append("\" stroke-width=\"")
-                .append(n(width)).append("\"").append(dash.isEmpty()?"":" stroke-dasharray=\""+dash+"\"").append("/>");
+                .append(n(width)).append("\"").append(dash.isEmpty() ? "" : " stroke-dasharray=\"" + dash + "\"").append("/>");
     }
-    private static void label(StringBuilder b,double x,double y,String text,int size,String anchor,boolean bold) {
+
+    private static void label(StringBuilder b, double x, double y, String text, int size, String anchor, boolean bold) {
         b.append("<text x=\"").append(n(x)).append("\" y=\"").append(n(y)).append("\" font-family=\"Arial, DejaVu Sans, sans-serif\" fill=\"").append(INK)
                 .append("\" font-size=\"").append(size).append("\" text-anchor=\"").append(anchor)
-                .append("\" font-weight=\"").append(bold?"700":"400").append("\">").append(esc(text)).append("</text>");
+                .append("\" font-weight=\"").append(bold ? "700" : "400").append("\">").append(esc(text)).append("</text>");
     }
-    private static String n(double x) {return String.format(Locale.ROOT,"%.2f",x);}
-    private static String esc(String s) {return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;");}
+
+    private static String n(double x) {
+        return String.format(Locale.ROOT, "%.2f", x);
+    }
+
+    private static String esc(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private record Obs(int step, double pct) {
+    }
 }

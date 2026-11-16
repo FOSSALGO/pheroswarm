@@ -129,7 +129,7 @@ public class Drone {
     /**
      * Renders the same sprite with an optional preview radius, without changing simulation state.
      *
-     * @param gc graphics context in world space
+     * @param gc               graphics context in world space
      * @param sensorRangeCells sensing radius to draw in grid cells
      */
     void draw(GraphicsContext gc, int sensorRangeCells) {
@@ -199,9 +199,9 @@ public class Drone {
     /**
      * Draws the occluded 360-degree footprint for the given radius.
      *
-     * @param gc graphics context in world space
-     * @param sx horizontal sensor origin in pixels
-     * @param sy vertical sensor origin in pixels
+     * @param gc               graphics context in world space
+     * @param sx               horizontal sensor origin in pixels
+     * @param sy               vertical sensor origin in pixels
      * @param sensorRangeCells sensing radius to draw in grid cells
      */
     private void drawSensoreVisibility(GraphicsContext gc, double sx, double sy, int sensorRangeCells) {

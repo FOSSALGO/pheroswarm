@@ -132,36 +132,8 @@ public final class AlgorithmPropertiesPane extends VBox {
         footer.setAlignment(Pos.CENTER_LEFT);
         getChildren().add(footer);
         updateMethodState();
-        updateSensorPreview(cells -> {});
-    }
-
-    /**
-     * Sends valid sensor radius edits to the preview, including a reset to defaults.
-     *
-     * @param preview handler for a valid radius
-     */
-    void onSensorRangeChanged(IntConsumer preview) {
-        sensorRange.textProperty()
-                .addListener((observable, previous, current) -> updateSensorPreview(preview));
-        updateSensorPreview(preview);
-    }
-
-    /**
-     * Keeps the last valid preview while an incomplete or invalid value is being edited.
-     *
-     * @param preview handler for a valid radius
-     */
-    private void updateSensorPreview(IntConsumer preview) {
-        int cells;
-        try {
-            cells = getSensorRangeCells();
-        } catch (IllegalArgumentException ex) {
-            sensorFeedback.setText("Enter a whole number from 1 to "
-                    + CanvasView.MAX_SENSOR_RANGE_CELLS + " cells.");
-            return;
-        }
-        sensorFeedback.setText("Live preview while idle or paused. Active replay keeps its run settings.");
-        preview.accept(cells);
+        updateSensorPreview(cells -> {
+        });
     }
 
     /**
@@ -218,6 +190,35 @@ public final class AlgorithmPropertiesPane extends VBox {
         HBox.setHgrow(editor, Priority.ALWAYS);
         editor.setMaxWidth(Double.MAX_VALUE);
         return line;
+    }
+
+    /**
+     * Sends valid sensor radius edits to the preview, including a reset to defaults.
+     *
+     * @param preview handler for a valid radius
+     */
+    void onSensorRangeChanged(IntConsumer preview) {
+        sensorRange.textProperty()
+                .addListener((observable, previous, current) -> updateSensorPreview(preview));
+        updateSensorPreview(preview);
+    }
+
+    /**
+     * Keeps the last valid preview while an incomplete or invalid value is being edited.
+     *
+     * @param preview handler for a valid radius
+     */
+    private void updateSensorPreview(IntConsumer preview) {
+        int cells;
+        try {
+            cells = getSensorRangeCells();
+        } catch (IllegalArgumentException ex) {
+            sensorFeedback.setText("Enter a whole number from 1 to "
+                    + CanvasView.MAX_SENSOR_RANGE_CELLS + " cells.");
+            return;
+        }
+        sensorFeedback.setText("Live preview while idle or paused. Active replay keeps its run settings.");
+        preview.accept(cells);
     }
 
     /**
