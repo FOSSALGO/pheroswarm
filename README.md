@@ -42,7 +42,7 @@ PheroSwarm simulates realistic constraints for aerial robotic agents operating i
    - Drones deposit virtual repulsive pheromone markers along visited cells and active paths.
    - Pheromones dynamically evaporate ($\rho$) and penalize frontier cost functions ($\lambda$), naturally driving other swarm members away from recently explored sectors and eliminating redundant clustering.
 3. **Decentralized Coordination:**
-   - Drones operate without a central orchestrator. Each agent independently plans optimal collision-free trajectories using 8-connected A* / Dijkstra variants over local occupancy evidence grids.
+   - Drones operate without a central orchestrator. Each agent independently plans optimal collision-free trajectories using 8-connected Dijkstra / Dijkstra variants over local occupancy evidence grids.
 4. **Collision Avoidance & Recovery Protocols:**
    - Built-in dynamic collision resolution, deadlock mitigation, and alternative route discovery when target frontiers become exhausted or blocked.
 5. **Interactive CAD / Grid Environment Editor:**
