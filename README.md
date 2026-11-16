@@ -131,7 +131,7 @@ A standalone Fat/Uber JAR containing all JavaFX runtime modules and dependencies
 ```
 The executable binary will be generated at:
 ```text
-target/pheroswarm-1.0-SNAPSHOT.jar
+target/pheroswarm-1.0.0.jar
 ```
 
 ### 4. Run Executable `.jar`
