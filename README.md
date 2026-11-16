@@ -14,7 +14,7 @@
 
 Below is a snapshot of **PheroSwarm** simulating multi-drone decentralized coverage in an interconnected indoor partitioned environment:
 
-<p align="center">
+<p>
   <img src="assets/images/pheroswarm_simulator_screenshot.png" alt="PheroSwarm Simulator Interface" width="950"/>
 </p>
 
