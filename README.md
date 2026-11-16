@@ -15,7 +15,7 @@
 Below is a snapshot of **PheroSwarm** simulating multi-drone decentralized coverage in an interconnected indoor partitioned environment:
 
 <p>
-  <img src="assets/images/pheroswarm_simulator_screenshot.png" alt="PheroSwarm Simulator Interface" width="800"/>
+  <img src="assets/images/pheroswarm_simulator_screenshot.png" alt="PheroSwarm Simulator Interface" width="1024"/>
 </p>
 
 *The visual workspace displays real-time 8-connected grid navigation, drone trajectories, sensing ranges, dynamic obstacle boundaries, repulsive pheromone distributions, live simulation metrics, and algorithm runtime parameters.*
