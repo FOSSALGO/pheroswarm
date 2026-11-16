@@ -161,9 +161,9 @@ If you use **PheroSwarm** or its algorithmic components in your research, disser
 
 ```bibtex
 @article{pheroswarm2026,
-  title     = {PheroSwarm: A Nature-Inspired Simulator for Decentralized Drone Swarm Coverage Using Frontier-Based Exploration and Digital Pheromones},
-  author    = {Fosalgo},
-  journal   = {SoftwareX},
+  title     = {PheroSwarm: A nature-inspired simulator for decentralized drone swarm coverage using frontier-based exploration and digital pheromones},
+  author    = {Andi Amijoyo Mochtar; Rustan Tarakka; Sugiarto Cokrowibowo },
+  journal   = { },
   year      = {2026},
   url       = {https://fossalgo.github.io/pheroswarm/}
 }
