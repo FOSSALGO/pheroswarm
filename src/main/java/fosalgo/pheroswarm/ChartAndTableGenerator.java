@@ -10,6 +10,9 @@ import org.w3c.dom.*;
 /** Builds compact, publication-oriented vector charts and editable tables from Tester output. */
 public final class ChartAndTableGenerator {
     private static final String INK="#253746", BASE="#4d6075", M1="#087a72", GRID="#dce5e8", SOFT="#f2f7f7";
+    // Fig. 3 palette. The companion redundancy chart keeps its original styling.
+    private static final String COVERAGE_M0="#CB0404", COVERAGE_M1="#309898";
+    private static final String COVERAGE_DASH="5 3";
     private static final List<String> MAPS=List.of("A","B"), LAYOUTS=List.of("Clustered","Dispersed");
     private record Obs(int step,double pct) {}
     private ChartAndTableGenerator() {}
@@ -71,19 +74,19 @@ public final class ChartAndTableGenerator {
     }
 
     private static void writeCoverage(Path out,Map<String,List<Obs>> all) throws IOException {
-        StringBuilder b=svg(720,500,"Observed coverage by map and starting layout");
+        StringBuilder b=svg(720,506,"Cumulative observed coverage by map and starting layout");
         int max=all.values().stream().mapToInt(v->v.get(v.size()-1).step()).max().orElseThrow();
         int interval=Math.max(1,(int)(Math.ceil(max/400.0)*100));
         int xMax=(int)Math.ceil(max/(double)interval)*interval;
         for(int i=0;i<4;i++) {
             String map=MAPS.get(i/2), layout=LAYOUTS.get(i%2);
-            int x=75+344*(i%2), y=49+216*(i/2), w=273,h=152;
-            label(b,x,y-14,"("+(char)('a'+i)+")  Map "+map+" · "+layout,15,"start",true);
-            rect(b,x,y,w,h,SOFT);
-            for(int p=0;p<=100;p+=25) {
-                double yy=y+h-(h*p/100.0);
-                line(b,x,yy,x+w,yy,GRID,0.8,"");
-                label(b,x-9,yy+4,Integer.toString(p),12,"end",false);
+            int x=74+338*(i%2), y=62+220*(i/2), w=283,h=142;
+            label(b,x,y-37,"("+(char)('a'+i)+")  Map "+map+" · "+layout,15,"start",true);
+            rect(b,x,y,w,h,"#FAFCFC");
+            for(int pct=0;pct<=100;pct+=25) {
+                double yy=y+h-h*pct/100.0;
+                line(b,x,yy,x+w,yy,GRID,pct==100?1.0:0.7,"");
+                label(b,x-9,yy+4,Integer.toString(pct),12,"end",false);
             }
             for(int t=0;t<=xMax;t+=interval) {
                 double xx=x+w*t/(double)xMax;
@@ -92,28 +95,44 @@ public final class ChartAndTableGenerator {
             }
             line(b,x,y+h,x+w,y+h,INK,0.9,"");
             line(b,x,y,x,y+h,INK,0.9,"");
-            for(String mode:List.of("M0","M1")) {
+            Obs[] endpoints=new Obs[2];
+            for(int variant=0;variant<2;variant++) {
+                boolean baseline=variant==0;
+                String mode=baseline?"M0":"M1";
                 var v=all.get(map+"/"+layout+"/"+mode);
-                if(v==null) throw new IOException("Missing curve");
-                String color=mode.equals("M0")?BASE:M1;
+                if(v==null) throw new IOException("Missing curve: "+map+"/"+layout+"/"+mode);
+                String color=baseline?COVERAGE_M0:COVERAGE_M1;
                 StringBuilder d=new StringBuilder();
                 for(Obs o:v) {
-                    double xx=x+w*o.step()/((double)xMax), yy=y+h-h*o.pct()/100;
-                    d.append(d.isEmpty()?"M":"H").append(n(xx));
-                    if(d.indexOf("H")<0) d.append(' ').append(n(yy));
-                    else d.append(" V").append(n(yy));
+                    double xx=x+w*o.step()/(double)xMax, yy=y+h-h*o.pct()/100;
+                    if(d.isEmpty()) d.append('M').append(n(xx)).append(' ').append(n(yy));
+                    else d.append('H').append(n(xx)).append('V').append(n(yy));
                 }
                 b.append("<path d=\"").append(d).append("\" fill=\"none\" stroke=\"").append(color)
-                    .append("\" stroke-width=\"2.1\" ").append(mode.equals("M0")?"stroke-dasharray=\"5 3\"":"").append("/>");
-                Obs last=v.get(v.size()-1);
-                circle(b,x+w*last.step()/(double)xMax,y+h-h*last.pct()/100,2.8,color);
+                    .append("\" stroke-width=\"2.15\" stroke-linejoin=\"round\"")
+                    .append(baseline?" stroke-dasharray=\""+COVERAGE_DASH+"\"":"").append("/>");
+                endpoints[variant]=v.get(v.size()-1);
+            }
+            // Mark actual run endpoints and label the completion step when coverage is full.
+            for(int variant=0;variant<2;variant++) {
+                Obs end=endpoints[variant];
+                String color=variant==0?COVERAGE_M0:COVERAGE_M1;
+                double xx=x+w*end.step()/(double)xMax, yy=y+h-h*end.pct()/100;
+                if(variant==0) rect(b,xx-2.8,yy-2.8,5.6,5.6,color);
+                else circle(b,xx,yy,3.1,color);
+                if(end.pct()==100.0) {
+                    double gap=w*Math.abs(end.step()-endpoints[1-variant].step())/(double)xMax;
+                    double labelX=Math.max(x+13,Math.min(x+w-13,xx));
+                    double labelY=y-10-(gap<28 && variant==0 && endpoints[1].pct()==100.0?13:0);
+                    label(b,labelX,labelY,Integer.toString(end.step()),11,"middle",true);
+                }
             }
         }
-        b.append("<g transform=\"translate(23 235) rotate(-90)\">");
+        b.append("<g transform=\"translate(20 243) rotate(-90)\">");
         label(b,0,0,"Observed coverage (%)",14,"middle",true);
         b.append("</g>");
-        label(b,383,456,"Simulation step",14,"middle",true);
-        legend(b,282,478);
+        label(b,384,471,"Simulation step",14,"middle",true);
+        coverageLegend(b,251,491);
         write(out,"PheroSwarm_Observed_Coverage.svg",b);
     }
 
@@ -191,9 +210,13 @@ public final class ChartAndTableGenerator {
     private static void write(Path out,String name,StringBuilder b)throws IOException {
         Files.writeString(out.resolve(name),b.append("</svg>").toString());
     }
-    private static void legend(StringBuilder b,int x,int y) {
-        line(b,x,y,x+26,y,BASE,2,"5 3"); label(b,x+33,y+4,"M0 (λ=0)",12,"start",false);
-        line(b,x+125,y,x+151,y,M1,2,""); label(b,x+158,y+4,"M1 (λ=1)",12,"start",false);
+    private static void coverageLegend(StringBuilder b,int x,int y) {
+        line(b,x,y,x+31,y,COVERAGE_M0,2.15,COVERAGE_DASH);
+        rect(b,x+12.7,y-2.8,5.6,5.6,COVERAGE_M0);
+        label(b,x+40,y+4,"M0 (λ=0)",12,"start",false);
+        line(b,x+151,y,x+182,y,COVERAGE_M1,2.15,"");
+        circle(b,x+166.5,y,3.1,COVERAGE_M1);
+        label(b,x+191,y+4,"M1 (λ=1)",12,"start",false);
     }
     private static void rect(StringBuilder b,double x,double y,double w,double h,String fill) {
         b.append("<rect x=\"").append(n(x)).append("\" y=\"").append(n(y)).append("\" width=\"").append(n(w))

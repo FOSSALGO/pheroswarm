@@ -348,9 +348,9 @@ public class MainView extends Application {
         if (selectedFile != null) {
 
             try {
-                if (!selectedFile.getName().toLowerCase().endsWith(".sc"))
+                if (!selectedFile.getName().toLowerCase().endsWith(".scw"))
                     selectedFile =
-                            new File(selectedFile.getParentFile(), selectedFile.getName() + ".sc");
+                            new File(selectedFile.getParentFile(), selectedFile.getName() + ".scw");
                 canvas.writeToFile(selectedFile);
                 currentMapName = selectedFile.getName();
                 statusLabel.setText("Saved: " + selectedFile.getName());
